@@ -215,3 +215,4 @@ if __name__ == '__main__':
                    (44, 178, 255, 255), True)
 
     img.show()
+    img.save("template.png")
