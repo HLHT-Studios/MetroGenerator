@@ -24,7 +24,8 @@ def getPos(pos1: tuple, pos2: tuple):
     return point1, point2
 
 
-def getTurnPoint(pos1: tuple, pos2: tuple, last_point=Station(0, 0), use_last=False) -> tuple:
+def getTurnPoint(pos1: tuple, pos2: tuple, last_point=Station(0, 0), next_point=Station(0, 0),
+                 use_last=False, use_next=False) -> tuple:
     point1, point2 = getPos(pos1, pos2)
     point3, point4 = getPos(pos2, pos1)
 
@@ -42,9 +43,9 @@ def getTurnPoint(pos1: tuple, pos2: tuple, last_point=Station(0, 0), use_last=Fa
     else:
         _point = point4
 
-    if not use_last:
-        return point
-    else:
+    result = (point[0], point[1])
+
+    if use_last:
         mid_point = last_point.mid_point
         angle1 = round(degrees.getAnglePoints(mid_point, pos1, point), 2)
         angle2 = round(degrees.getAnglePoints(mid_point, pos1, _point), 2)
@@ -53,15 +54,40 @@ def getTurnPoint(pos1: tuple, pos2: tuple, last_point=Station(0, 0), use_last=Fa
         # print(f"Angles: {angle1}, {angle2}")
         # print(f"TPos: {mid_point}, {pos1}, {_point}")
 
-        if degrees.check_angle(angle1, True) or degrees.check_angle(angle2, True):
-            point = point if angle1 > angle2 else _point
-            return point
+        # if degrees.check_angle(angle1, True, True) or degrees.check_angle(angle2, True, True):
+        #     point = point if angle1 > angle2 else _point
+        #     print(angle1, angle2, last_point.name, "aaa")
+        #     return point
 
-        point = point if angle1 > angle2 else _point
-
+        result = point if angle1 > angle2 else _point
         # print("Chose 1") if angle1 > angle2 else print("Chose 2")
 
-        return point
+    if use_next:
+        angle_to_next = round(degrees.getAnglePoints(point, pos2, next_point.mid_point), 2)
+        angle_to_next2 = round(degrees.getAnglePoints(_point, pos2, next_point.mid_point), 2)
+        angle_this = round(degrees.getAnglePoints(pos1, point, pos2), 2)
+
+        if angle_to_next >= 90 and angle_to_next2 >= 90:
+            # print(angle_this, angle_to_next, angle_to_next2, last_point.name, "90")
+            return result
+
+        if angle_this + angle_to_next != angle_this + angle_to_next2:
+            # print(angle_this, angle_to_next, angle_to_next2, last_point.name)
+
+            if use_last:
+                # print("last")
+                angle_to_last = round(degrees.getAnglePoints(point, pos1, last_point.tuple), 2)
+                angle_to_last2 = round(degrees.getAnglePoints(_point, pos1, last_point.tuple), 2)
+                # print(angle_this, angle_to_last, angle_to_last2, last_point.name)
+                result = point if min(angle_to_next, angle_this,
+                                      angle_to_last) > min(angle_to_next2, angle_this, angle_to_last2) else _point
+            else:
+                result = point if angle_to_next + angle_this > angle_to_next2 + angle_this else _point
+        else:
+            # print(angle_this, angle_to_next, angle_to_next2, last_point.name, "bbb")
+            result = point if min(angle_to_next, angle_this) > min(angle_to_next2, angle_this) else _point
+
+    return result
 
 
 if __name__ == '__main__':

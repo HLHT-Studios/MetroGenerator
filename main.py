@@ -84,8 +84,8 @@ def find_text_angle(station: Station, station_b: Station):
     _pos = (round(imath.degrees.rotate_point(pos, center, 90)[0]),
             round(imath.degrees.rotate_point(pos, center, 90)[1]))
 
-    print(imath.degrees.getAnglePoints_360(_pos, center, station_b.mid_point))
-    print(_pos)
+    # print(imath.degrees.getAnglePoints_360(_pos, center, station_b.mid_point))
+    # print(_pos)
     if imath.degrees.getAnglePoints_360(_pos, center, station_b.mid_point) >= 15:
         _pos = _pos
     else:
@@ -126,29 +126,65 @@ def generate(stations, color: tuple, loop=False) -> Image:
             point = points[index + 1].tuple
         else:
             if index > 0:
-                point = imath.getTurnPoint(i.tuple, points[index + 1].tuple, points[index - 1], True)
+                point = imath.getTurnPoint(i.tuple, points[index + 1].tuple, points[index - 1],
+                                           use_last=True)
             else:
                 point = imath.getTurnPoint(i.tuple, points[index + 1].tuple)
         # print(i.tuple, point)
         # print("\n")
-
         i.mid_point = point
+        index += 1
 
-        draw.line((i.tuple[0], i.tuple[1], point[0], point[1]), fill=color, width=20)
-        draw.line((point[0], point[1], points[index + 1].tuple[0], points[index + 1].tuple[1]),
+    # look back to check each mid_point
+    index = 0
+    for i in points:
+        if index + 1 > len(points) - 1:
+            break
+        angle = imath.degrees.calc_degrees(i.tuple, points[index + 1].tuple)
+        if imath.degrees.check_angle(angle):
+            point = points[index + 1].tuple
+        else:
+            if len(points) - 1 > index > 0:
+                point = imath.getTurnPoint(i.tuple, points[index + 1].tuple, points[index - 1], points[index+1],
+                                           use_last=True, use_next=True)
+            elif index == 0:
+                if loop:
+                    point = imath.getTurnPoint(i.tuple, points[index + 1].tuple, points[-1], points[index+1],
+                                               use_last=True, use_next=True)
+                else:
+                    point = imath.getTurnPoint(i.tuple, points[index + 1].tuple)
+            else:
+                if loop:
+                    point = imath.getTurnPoint(i.tuple, points[index + 1].tuple, points[index - 1], points[0],
+                                               use_last=True, use_next=True)
+                else:
+                    point = imath.getTurnPoint(i.tuple, points[index + 1].tuple, points[index - 1],
+                                               use_last=True)
+        i.mid_point = point
+        index += 1
+
+    index = 0
+    for point in points:
+        if index + 1 > len(points) - 1:
+            break
+        mid_point = point.mid_point
+        draw.line((point.x, point.y, mid_point[0], mid_point[1]), fill=color, width=20)
+        draw.line((mid_point[0], mid_point[1], points[index + 1].x, points[index + 1].y),
                   fill=color, width=20)
-        draw_round(draw, point, color)
+        draw_round(draw, mid_point, color)
         index += 1
 
     if loop:
         point1 = points[-1]
         point2 = points[0]
         point3 = points[-2]
+        point4 = points[0]
         angle = imath.degrees.calc_degrees(point1.tuple, point2.tuple)
         if imath.degrees.check_angle(angle):
             point = point2.tuple
         else:
-            point = imath.getTurnPoint(point1.tuple, point2.tuple, point3, True)
+            point = imath.getTurnPoint(point1.tuple, point2.tuple, point3, point4,
+                                       use_last=True, use_next=True)
         points[-1].mid_point = point
         draw.line((point1.tuple[0], point1.tuple[1], point[0], point[1]), fill=color, width=20)
         draw.line((point[0], point[1], point2.tuple[0], point2.tuple[1]),
@@ -169,9 +205,12 @@ def generate(stations, color: tuple, loop=False) -> Image:
 
 
 if __name__ == '__main__':
-    img = generate([Station(402, 590), Station(566, 420), Station(421, 310), Station(330, 240), Station(330, 324),
-                    Station(226, 324),
-                    Station(272, 183), Station(165, 118), Station(128, 238), Station(128, 390), Station(195, 561)],
+    img = generate([Station(402, 590, name="Station1"), Station(566, 420, name="Station2"),
+                    Station(421, 310, name="Station3"), Station(330, 240, name="Station4"),
+                    Station(330, 324, name="Station5"), Station(226, 324, name="Station6"),
+                    Station(272, 183, name="Station7"), Station(165, 118, name="Station8"),
+                    Station(128, 238, name="Station9"), Station(128, 390, name="Station1 "),
+                    Station(195, 561, name="Station11")],
 
                    (44, 178, 255, 255), True)
 

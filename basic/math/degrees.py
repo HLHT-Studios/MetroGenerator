@@ -3,12 +3,10 @@
 import math
 
 
-def check_angle(angle, degrees=False):
+def check_angle(angle, degrees=False, vh_only=False):
+    angles = [0, 45, 90, 75, 135, 180] if not vh_only else [0, 90, 180]
     angle = round(math.degrees(angle), 2) if not degrees else round(angle, 2)
-    for i in [0, 45, 90, 75, 180]:
-        if angle == i:
-            return True
-    return False
+    return True if angle in angles else False
 
 
 def getAnglePoints(a, b, c):
