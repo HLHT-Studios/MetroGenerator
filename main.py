@@ -1,4 +1,3 @@
-import math
 import basic.math as imath
 from PIL import Image, ImageDraw, ImageFont
 import random

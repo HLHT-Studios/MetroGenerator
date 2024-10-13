@@ -1,7 +1,6 @@
 """ Calculate the degree with two given point """
 
 import math
-import numpy as np
 
 
 def check_angle(angle, degrees=False):
